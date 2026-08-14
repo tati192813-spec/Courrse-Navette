@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prueba de 20 Bases</title>
+  <style>
+    :root {
+      --bg-color: #090d16;
+      --card-bg: #131c2e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #22c55e;
+      --accent-orange: #f97316;
+      --accent-yellow: #eab308;
+      --accent-red: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      border-radius: 24px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 520px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      border: 1px solid #1e293b;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+      color: var(--accent-blue);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      background-color: #1e293b;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge.active {
+      background-color: rgba(34, 197, 94, 0.15);
+      color: var(--accent-green);
+      border: 1px solid var(--accent-green);
+    }
+
+    .status-badge.prep {
+      background-color: rgba(249, 115, 22, 0.15);
+      color: var(--accent-orange);
+      border: 1px solid var(--accent-orange);
+    }
+
+    .status-badge.paused {
+      background-color: rgba(234, 179, 8, 0.15);
+      color: var(--accent-yellow);
+      border: 1px solid var(--accent-yellow);
+    }
+
+    .select-card {
+      background-color: #0b1324;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .select-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: left;
+    }
+
+    select {
+      background-color: #1e293b;
+      color: #ffffff;
+      border: 1px solid var(--accent-blue);
+      padding: 8px 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 10px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-color: #334155;
+    }
+
+    .base-header {
+      background-color: #0b1324;
+      border: 2px solid var(--accent-blue);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .base-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 1px;
+    }
+
+    .base-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ESTILOS DE LOS CONOS Y RECORRIDO VISUAL */
+    .cone-container {
+      background-color: #0b1324;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 18px 16px;
+      margin-bottom: 16px;
+    }
+
+    .last-cone-badge {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--accent-orange);
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 10px rgba(249, 115, 22, 0.3);
+    }
+
+    .track-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      position: relative;
+    }
+
+    .cone-label {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--accent-blue);
+      background: #1e293b;
+      padding: 8px 14px;
+      border-radius: 10px;
+      white-space: nowrap;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .cone-label.highlight {
+      background-color: var(--accent-blue);
+      color: #041629;
+      border-color: #ffffff;
+      box-shadow: 0 0 18px var(--accent-blue);
+      transform: scale(1.1);
+    }
+
+    .track {
+      flex: 1;
+      height: 12px;
+      background-color: #1e293b;
+      border-radius: 6px;
+      position: relative;
+      margin: 0 5px;
+    }
+
+    .ball {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      width: 24px;
+      height: 24px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 12px var(--accent-green);
+    }
+
+    .clock-card {
+      background-color: #090e1a;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid #1e293b;
+    }
+
+    .clock-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 4px;
+    }
+
+    .clock-main {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 3.6rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -1px;
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    .clock-interval {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 3.1rem;
+      font-weight: 800;
+      color: var(--accent-blue);
+      letter-spacing: -1px;
+      text-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 14px 8px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-start {
+      background-color: var(--accent-green);
+      color: #042f2e;
+    }
+
+    .btn-start:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .btn-pause {
+      background-color: var(--accent-yellow);
+      color: #422006;
+    }
+
+    .btn-pause:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .btn-reset {
+      background-color: #334155;
+      color: #ffffff;
+    }
+
+    .btn-reset:hover {
+      background-color: #475569;
+    }
+
+    button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+
+  <audio id="silentAudio" loop playsinline src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA"></audio>
+
+  <div class="container">
+    <h1>PRUEBA DE 20 BASES</h1>
+    <div id="statusBadge" class="status-badge">Preparado</div>
+
+    <div class="select-card">
+      <label for="baseSelect" class="select-label">Empieza en:</label>
+      <select id="baseSelect">
+        <option value="0">BASE 1 (8.47s)</option>
+        <option value="1">BASE 2 (8.00s)</option>
+        <option value="2">BASE 3 (7.58s)</option>
+        <option value="3">BASE 4 (7.20s)</option>
+        <option value="4">BASE 5 (6.86s)</option>
+        <option value="5">BASE 6 (6.55s)</option>
+        <option value="6">BASE 7 (6.26s)</option>
+        <option value="7">BASE 8 (6.00s)</option>
+        <option value="8">BASE 9 (5.76s)</option>
+        <option value="9">BASE 10 (5.54s)</option>
+        <option value="10">BASE 11 (5.33s)</option>
+        <option value="11">BASE 12 (5.14s)</option>
+        <option value="12">BASE 13 (4.97s)</option>
+        <option value="13">BASE 14 (4.80s)</option>
+        <option value="14">BASE 15 (4.65s)</option>
+        <option value="15">BASE 16 (4.50s)</option>
+        <option value="16">BASE 17 (4.36s)</option>
+        <option value="17">BASE 18 (4.24s)</option>
+        <option value="18">BASE 19 (4.11s)</option>
+        <option value="19">BASE 20 (4.00s)</option>
+      </select>
+    </div>
+
+    <div class="base-header">
+      <div id="baseDisplay" class="base-title">BASE 1</div>
+      <div id="repDisplay" class="base-subtitle">Intervalo: 8.470s | Repetición: 0 / 7</div>
+    </div>
+
+    <div class="cone-container">
+      <div id="lastConeDisplay" class="last-cone-badge">ÚLTIMO CONO A</div>
+      <div class="track-wrapper">
+        <span id="coneA" class="cone-label">CONO A</span>
+        <div class="track">
+          <div id="ball" class="ball"></div>
+        </div>
+        <span id="coneB" class="cone-label">CONO B</span>
+      </div>
+    </div>
+
+    <div class="clock-card">
+      <div class="clock-label">CRONÓMETRO PRINCIPAL</div>
+      <div id="mainTimer" class="clock-main">00.000</div>
+    </div>
+
+    <div class="clock-card">
+      <div class="clock-label">CUENTA ATRÁS DEL INTERVALO</div>
+      <div id="intervalTimer" class="clock-interval">08.470</div>
+    </div>
+
+    <div class="controls">
+      <button id="btnStart" class="btn-start">Iniciar</button>
+      <button id="btnPause" class="btn-pause" disabled>Pausar</button>
+      <button id="btnReset" class="btn-reset" disabled>Reiniciar</button>
+    </div>
+  </div>
+
+  <script>
+    const BASES = [
+      { id: 1,  interval: 8.47, totalReps: 7  },
+      { id: 2,  interval: 8.00, totalReps: 8  },
+      { id: 3,  interval: 7.58, totalReps: 8  },
+      { id: 4,  interval: 7.20, totalReps: 9  },
+      { id: 5,  interval: 6.86, totalReps: 9  },
+      { id: 6,  interval: 6.55, totalReps: 9  },
+      { id: 7,  interval: 6.26, totalReps: 10 },
+      { id: 8,  interval: 6.00, totalReps: 10 },
+      { id: 9,  interval: 5.76, totalReps: 11 },
+      { id: 10, interval: 5.54, totalReps: 11 },
+      { id: 11, interval: 5.33, totalReps: 12 },
+      { id: 12, interval: 5.14, totalReps: 12 },
+      { id: 13, interval: 4.97, totalReps: 13 },
+      { id: 14, interval: 4.80, totalReps: 13 },
+      { id: 15, interval: 4.65, totalReps: 13 },
+      { id: 16, interval: 4.50, totalReps: 14 },
+      { id: 17, interval: 4.36, totalReps: 14 },
+      { id: 18, interval: 4.24, totalReps: 14 },
+      { id: 19, interval: 4.11, totalReps: 15 },
+      { id: 20, interval: 4.00, totalReps: 15 }
+    ];
+
+    const BASE_NAMES_VOICE = [
+      "UNO", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", 
+      "SIETE", "OCHO", "NUEVE", "DIEZ", "ONCE", "DOCE",
+      "TRECE", "CATORCE", "QUINCE", "DIECISÉIS", "DIECISIETE", "DIECIOCHO",
+      "DIECINUEVE", "VEINTE"
+    ];
+
+    let audioCtx = null;
+    let isRunning = false;
+    let isPaused = false;
+    let timerIntervalId = null;
+    let wakeLock = null;
+
+    let prepStartTime = 0;
+    let testStartTime = 0;
+    let intervalStartTime = 0;
+    let pauseStartTime = 0;
+
+    let state = 'IDLE';
+    let currentBaseIdx = 0;
+    let currentRepCount = 0;
+    let totalCompletedReps = 0;
+    let lastSpokenSec = -1;
+
+    let coneATimeout = null;
+    let coneBTimeout = null;
+
+    const baseSelect = document.getElementById('baseSelect');
+    const statusBadge = document.getElementById('statusBadge');
+    const baseDisplay = document.getElementById('baseDisplay');
+    const repDisplay = document.getElementById('repDisplay');
+    const mainTimer = document.getElementById('mainTimer');
+    const intervalTimer = document.getElementById('intervalTimer');
+    const btnStart = document.getElementById('btnStart');
+    const btnPause = document.getElementById('btnPause');
+    const btnReset = document.getElementById('btnReset');
+    const silentAudio = document.getElementById('silentAudio');
+    
+    const ball = document.getElementById('ball');
+    const lastConeDisplay = document.getElementById('lastConeDisplay');
+    const coneA = document.getElementById('coneA');
+    const coneB = document.getElementById('coneB');
+
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {
+        console.warn('Wake Lock no disponible');
+      }
+    }
+
+    function releaseWakeLock() {
+      if (wakeLock !== null) {
+        wakeLock.release();
+        wakeLock = null;
+      }
+    }
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      silentAudio.play().catch(() => {});
+    }
+
+    baseSelect.addEventListener('change', () => {
+      if (!isRunning) {
+        currentBaseIdx = parseInt(baseSelect.value, 10);
+        currentRepCount = 0;
+        totalCompletedReps = 0;
+        updateUIHeader();
+        updateVisualTrack(0);
+      }
+    });
+
+    function playBeep(duration = 3.0, frequency = 880) {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+
+        gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    function highlightCone(targetCone, durationMs = 3000) {
+      if (targetCone === 'A') {
+        coneA.classList.add('highlight');
+        if (coneATimeout) clearTimeout(coneATimeout);
+        coneATimeout = setTimeout(() => {
+          coneA.classList.remove('highlight');
+        }, durationMs);
+      } else if (targetCone === 'B') {
+        coneB.classList.add('highlight');
+        if (coneBTimeout) clearTimeout(coneBTimeout);
+        coneBTimeout = setTimeout(() => {
+          coneB.classList.remove('highlight');
+        }, durationMs);
+      }
+    }
+
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES';
+        utterance.rate = 1.0;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function formatSSmmm(seconds) {
+      if (seconds < 0) seconds = 0;
+      const s = Math.floor(seconds) % 60;
+      const ms = Math.floor((seconds % 1) * 1000);
+      return `${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+    }
+
+    function formatMainClock(seconds) {
+      if (seconds < 0) seconds = 0;
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds) % 60;
+      const ms = Math.floor((seconds % 1) * 1000);
+
+      if (m > 0) {
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+      }
+      return `${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+    }
+
+    function updateVisualTrack(progress) {
+      const clampedProgress = Math.min(Math.max(progress, 0), 1);
+
+      const isGoingAtoB = (totalCompletedReps % 2 === 0);
+      const originConeLetter = isGoingAtoB ? "A" : "B";
+      
+      let percentage = isGoingAtoB ? (clampedProgress * 100) : ((1 - clampedProgress) * 100);
+
+      ball.style.left = `${percentage}%`;
+      lastConeDisplay.textContent = `ÚLTIMO CONO ${originConeLetter}`;
+    }
+
+    function startTest() {
+      initAudio();
+      requestWakeLock();
+      isRunning = true;
+      isPaused = false;
+      state = 'PREP';
+
+      currentBaseIdx = parseInt(baseSelect.value, 10);
+      currentRepCount = 0;
+      totalCompletedReps = 0;
+      lastSpokenSec = -1;
+
+      prepStartTime = performance.now();
+
+      baseSelect.disabled = true;
+      btnStart.disabled = true;
+      btnPause.disabled = false;
+      btnPause.textContent = 'Pausar';
+      btnReset.disabled = false;
+
+      statusBadge.textContent = 'Cuenta atrás inicial';
+      statusBadge.className = 'status-badge prep';
+
+      updateUIHeader();
+      updateVisualTrack(0);
+
+      if (timerIntervalId) clearInterval(timerIntervalId);
+      timerIntervalId = setInterval(tick, 30);
+    }
+
+    function togglePause() {
+      if (!isRunning) return;
+
+      if (!isPaused) {
+        isPaused = true;
+        pauseStartTime = performance.now();
+        btnPause.textContent = 'Reanudar';
+        statusBadge.textContent = 'Pausado';
+        statusBadge.className = 'status-badge paused';
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        silentAudio.pause();
+        releaseWakeLock();
+      } else {
+        isPaused = false;
+        const pauseDuration = performance.now() - pauseStartTime;
+
+        if (state === 'PREP') {
+          prepStartTime += pauseDuration;
+        } else if (state === 'RUNNING') {
+          testStartTime += pauseDuration;
+          intervalStartTime += pauseDuration;
+        }
+
+        btnPause.textContent = 'Pausar';
+        statusBadge.textContent = state === 'PREP' ? 'Cuenta atrás inicial' : 'Prueba en curso';
+        statusBadge.className = state === 'PREP' ? 'status-badge prep' : 'status-badge active';
+        silentAudio.play().catch(() => {});
+        requestWakeLock();
+      }
+    }
+
+    function updateUIHeader() {
+      const base = BASES[currentBaseIdx];
+      baseDisplay.textContent = `BASE ${base.id}`;
+      repDisplay.textContent = `Intervalo: ${base.interval.toFixed(2)}s | Repetición: ${currentRepCount} / ${base.totalReps}`;
+      intervalTimer.textContent = formatSSmmm(base.interval);
+    }
+
+    function tick() {
+      if (!isRunning || isPaused) return;
+
+      const now = performance.now();
+
+      if (state === 'PREP') {
+        const prepElapsed = (now - prepStartTime) / 1000;
+        const currentSec = Math.floor(prepElapsed);
+
+        if (currentSec !== lastSpokenSec) {
+          lastSpokenSec = currentSec;
+          const baseWord = BASE_NAMES_VOICE[currentBaseIdx];
+
+          if (currentSec === 1) {
+            speak(`INICIO BASE ${baseWord} EN CINCO SEGUNDOS`);
+          } else if (currentSec === 5) {
+            speak('CINCO');
+          } else if (currentSec === 6) {
+            speak('CUATRO');
+          } else if (currentSec === 7) {
+            speak('TRES');
+          } else if (currentSec === 8) {
+            speak('DOS');
+          } else if (currentSec === 9) {
+            speak('UNO');
+          }
+        }
+
+        mainTimer.textContent = '00.000';
+        updateVisualTrack(0);
+
+        if (prepElapsed >= 10.0) {
+          state = 'RUNNING';
+          testStartTime = performance.now();
+          intervalStartTime = performance.now();
+
+          statusBadge.textContent = 'Prueba en curso';
+          statusBadge.className = 'status-badge active';
+
+          playBeep(3.0, 880);
+          highlightCone('A', 3000);
+        }
+      } 
+      else if (state === 'RUNNING') {
+        const testElapsed = (now - testStartTime) / 1000;
+        const base = BASES[currentBaseIdx];
+        const intervalElapsed = (now - intervalStartTime) / 1000;
+        let intervalRemaining = base.interval - intervalElapsed;
+
+        mainTimer.textContent = formatMainClock(testElapsed);
+
+        if (intervalRemaining < 0) intervalRemaining = 0;
+        intervalTimer.textContent = formatSSmmm(intervalRemaining);
+
+        const progress = intervalElapsed / base.interval;
+        updateVisualTrack(progress);
+
+        if (intervalElapsed >= base.interval) {
+          playBeep(3.0, 880);
+
+          const destinationCone = (totalCompletedReps % 2 === 0) ? 'B' : 'A';
+          highlightCone(destinationCone, 3000);
+
+          currentRepCount++;
+          totalCompletedReps++;
+
+          if (currentRepCount < base.totalReps) {
+            intervalStartTime = performance.now();
+            updateUIHeader();
+            updateVisualTrack(0);
+          } else {
+            if (currentBaseIdx < BASES.length - 1) {
+              speak(`BASE ${BASE_NAMES_VOICE[currentBaseIdx]} COMPLETA`);
+              currentBaseIdx++;
+              currentRepCount = 0;
+              intervalStartTime = performance.now();
+              updateUIHeader();
+              updateVisualTrack(0);
+            } else {
+              speak('BASE VEINTE COMPLETA');
+              finishTest();
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    function finishTest() {
+      state = 'FINISHED';
+      isRunning = false;
+      isPaused = false;
+      clearInterval(timerIntervalId);
+      silentAudio.pause();
+      releaseWakeLock();
+
+      statusBadge.textContent = 'Prueba Finalizada';
+      statusBadge.className = 'status-badge';
+
+      playBeep(5.0, 600);
+
+      setTimeout(() => {
+        speak('Fin de la prueba.');
+      }, 500);
+
+      baseSelect.disabled = false;
+      btnStart.disabled = false;
+      btnPause.disabled = true;
+      btnPause.textContent = 'Pausar';
+    }
+
+    function resetTest() {
+      isRunning = false;
+      isPaused = false;
+      state = 'IDLE';
+      clearInterval(timerIntervalId);
+      silentAudio.pause();
+      releaseWakeLock();
+
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      if (coneATimeout) clearTimeout(coneATimeout);
+      if (coneBTimeout) clearTimeout(coneBTimeout);
+      coneA.classList.remove('highlight');
+      coneB.classList.remove('highlight');
+
+      currentBaseIdx = parseInt(baseSelect.value, 10);
+      currentRepCount = 0;
+      totalCompletedReps = 0;
+
+      mainTimer.textContent = '00.000';
+      statusBadge.textContent = 'Preparado';
+      statusBadge.className = 'status-badge';
+      updateUIHeader();
+      updateVisualTrack(0);
+
+      baseSelect.disabled = false;
+      btnStart.disabled = false;
+      btnPause.disabled = true;
+      btnPause.textContent = 'Pausar';
+      btnReset.disabled = true;
+    }
+
+    btnStart.addEventListener('click', startTest);
+    btnPause.addEventListener('click', togglePause);
+    btnReset.addEventListener('click', resetTest);
+  </script>
+</body>
+</html>
