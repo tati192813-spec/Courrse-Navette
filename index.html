@@ -145,7 +145,6 @@
       margin-top: 2px;
     }
 
-    /* ESTILOS DE LOS CONOS Y RECORRIDO VISUAL */
     .cone-container {
       background-color: #0b1324;
       border: 1px solid #1e293b;
@@ -270,28 +269,14 @@
       color: #042f2e;
     }
 
-    .btn-start:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
-
     .btn-pause {
       background-color: var(--accent-yellow);
       color: #422006;
     }
 
-    .btn-pause:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
-
     .btn-reset {
       background-color: #334155;
       color: #ffffff;
-    }
-
-    .btn-reset:hover {
-      background-color: #475569;
     }
 
     button:disabled {
@@ -306,7 +291,7 @@
   <audio id="silentAudio" loop playsinline src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA"></audio>
 
   <div class="container">
-    <h1>PRUEBA DE 20 BASES</h1>
+    <h1>TEST COURSE-NAVETTE</h1>
     <div id="statusBadge" class="status-badge">Preparado</div>
 
     <div class="select-card">
@@ -460,6 +445,13 @@
         audioCtx.resume();
       }
       silentAudio.play().catch(() => {});
+
+      // Desbloqueo de sintetizador de voz para iOS Safari
+      if ('speechSynthesis' in window) {
+        const unlockUtterance = new SpeechSynthesisUtterance(' ');
+        unlockUtterance.volume = 0.01;
+        window.speechSynthesis.speak(unlockUtterance);
+      }
     }
 
     baseSelect.addEventListener('change', () => {
@@ -512,10 +504,10 @@
 
     function speak(text) {
       if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'es-ES';
         utterance.rate = 1.0;
+        utterance.volume = 1.0;
         window.speechSynthesis.speak(utterance);
       }
     }
